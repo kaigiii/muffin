@@ -124,10 +124,11 @@ body {
 
 /* 直接套用到鬆餅元素的外框（會跟著元素移動） */
 .bbox-outline {
-    outline: 2px solid rgba(255,0,0,0.9);
-    outline-offset: -2px;
+    /* 已預設關閉碰撞外框顯示；要啟用可移除這行或用 .show-bbox 在 body 上覆寫 */
+    outline: none !important;
+    outline-offset: 0;
     box-sizing: border-box;
-    z-index: 8; /* 比鬆餅還要高，確保可見 */
+    z-index: 8;
     pointer-events: none;
 }
 
