@@ -1,0 +1,226 @@
+/* 基本重設 */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f7e7f5; /* 淺粉紫背景，溫暖色調 */
+    font-family: 'Arial', sans-serif;
+    user-select: none;
+    padding: 0; /* 移除全局 padding，避免視覺置中偏移 */
+}
+
+/* 使用 border-box 方便計算與置中 */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+#game-container {
+    width: 400px; 
+    height: 600px;
+    background-color: #ffe0b2; /* 淺橙色遊戲區塊 (像木桌) */
+    border: 10px solid #d7a67f; /* 棕色邊框 */
+    border-radius: 15px; /* 圓角 */
+    box-shadow: none; /* 已移除陰影以避免視覺偏移 */
+    position: relative;
+    overflow: hidden;
+}
+
+/* 資訊列 */
+#info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 垂直置中 */
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.5); /* 半透明白色 */
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #5d4037; /* 深棕色文字 */
+    border-bottom: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 讓 score/timer 各自置中 */
+#score-display, #timer-display {
+    width: 50%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 遊戲區域 */
+#game-area {
+    width: 100%;
+    height: calc(100% - 45px); /* 扣除 info-bar 高度 */
+    position: relative;
+}
+
+/* 堆疊區塊 (盤子及已堆好的鬆餅) */
+#stack-area {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+/* 盤子 (更像一個碗/盤) */
+#plate {
+    width: 150px;
+    height: 30px;
+    background-color: #fff;
+    border-radius: 50% / 15px; 
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 5px 5px rgba(0,0,0,0.1); /* 增加立體感 */
+    border: 3px solid #ccc;
+    /* 確保盤子位於堆疊底部（鬆餅在上方） */
+    z-index: 2;
+}
+
+/* 移動中的鬆餅容器 */
+#moving-pancake-container {
+    position: absolute;
+    top: 50px;
+    width: 100%;
+    /* 擴展容器高度以覆蓋從 top 到底部的掉落區域
+       使 JS 設定的 top 值能在此容器內正確呈現 */
+    height: calc(100% - 50px);
+}
+
+/* 鬆餅基礎樣式 */
+.pancake {
+    position: absolute;
+    height: 25px; /* 稍微高一點，更立體 */
+    background-color: #ffb74d; /* 溫暖的鬆餅色 */
+    border-radius: 50%;
+    box-shadow: 0 4px 0 #e69a40; /* 底部陰影模擬厚度 */
+    transition: left 0.01s linear, transform 0.3s ease-in; /* << 使用 transform 做掉落動畫，較流暢 >> */
+    z-index: 5; /* 確保在堆疊的鬆餅之上 */
+}
+
+/* 已經堆好的鬆餅 */
+.stacked-pancake {
+    position: absolute;
+    /* 直接使用 left 放置，並以 bottom 放置高度 */
+    height: 25px; 
+    background-color: #ffb74d;
+    border-radius: 50%;
+    box-shadow: 0 4px 0 #e69a40;
+    transition: width 0.1s ease-out, background-color 0.1s ease-out, clip-path 0.1s ease-out;
+    z-index: 4;
+}
+
+/* 碰撞箱 (debug 用紅色外框) */
+.bbox {
+    position: absolute;
+    border: 2px solid rgba(255,0,0,0.9);
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 6;
+}
+
+/* 直接套用到鬆餅元素的外框（會跟著元素移動） */
+.bbox-outline {
+    outline: 2px solid rgba(255,0,0,0.9);
+    outline-offset: -2px;
+    box-sizing: border-box;
+    z-index: 8; /* 比鬆餅還要高，確保可見 */
+    pointer-events: none;
+}
+
+/* debug 開關：在 game-container 加上 .hide-bbox 可隱藏外框 */
+.hide-bbox .bbox-outline {
+    outline: none !important;
+}
+
+/* 暫時關閉開始/結束畫面的遮罩：在 body 加上 .no-overlay 即可 */
+.no-overlay #start-screen,
+.no-overlay #end-screen {
+    display: none !important;
+}
+
+/* 完美堆疊時的視覺回饋 */
+.perfect-stack {
+    background-color: #ffd700 !important; /* 金色 */
+    box-shadow: 0 4px 0 #ccaa00 !important;
+}
+
+/* 開始/結束介面 */
+/* 將遮罩擴展 10px，覆蓋 #game-container 的邊框，確保四角被遮罩 */
+#start-screen, #end-screen {
+    position: absolute;
+    /* 向外延伸覆蓋容器的 border (10px) */
+    top: -10px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    /* 顏色調整：使用較淺的棕色並提高透明度 (0.8 -> 0.75) */
+    background-color: rgba(118, 92, 80, 0.75); /* 柔和棕色半透明背景 */
+    color: white;
+    
+    /* 內容居中修正 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    
+    z-index: 10;
+    /* 調整圓角以包含原本容器的 border-radius + border-width */
+    border-radius: calc(15px + 10px);
+    padding: 0; /* 移除內距，內部用 .inner 處理置中與寬度 */
+}
+
+/* 讓 .inner 真正絕對置中，避免外部 padding 或陰影造成視覺偏移 */
+#start-screen .inner, #end-screen .inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* 使用相對穩定的寬度，避免受外部 padding 影響 */
+    width: min(360px, 90%);
+    max-width: 360px;
+}
+
+#start-screen h1, #end-screen h2 {
+    font-size: 2.5em;
+    color: #ffcc99;
+    /* 使用 flex 的對齊來處理垂直置中，移除負 margin 以避免視覺偏移 */
+    margin: 0 0 12px 0;
+}
+
+#end-screen p {
+    font-size: 1.5em;
+    margin: 20px 0;
+}
+
+/* 按鈕樣式 (更可愛且有按壓效果) */
+button {
+    padding: 12px 25px;
+    font-size: 1.3em;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #ff6e40; /* 珊瑚橘色按鈕 */
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #d95e34; /* 底部陰影模擬立體按鈕 */
+    transition: background-color 0.2s, transform 0.1s, box-shadow 0.1s;
+}
+
+button:hover {
+    background-color: #ff8c6b;
+}
+
+button:active {
+    /* 按下時的動畫 */
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #d95e34;
+}
+
+.hidden {
+    display: none !important;
+}

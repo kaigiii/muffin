@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🥞 疊鬆餅遊戲 (Pancake Stacker)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="no-overlay">
+
+    <div id="game-container">
+        <div id="info-bar">
+            <div id="score-display">鬆餅數: 0</div>
+            <div id="timer-display">時間: 30</div>
+        </div>
+
+        <div id="game-area">
+            <div id="stack-area">
+                <div id="plate"></div>
+            </div>
+
+            <div id="moving-pancake-container"></div>
+        </div>
+        
+        <div id="start-screen">
+            <div class="inner">
+                <h1>🥞 疊鬆餅挑戰 🥞</h1>
+                <p>目標：在 30 秒內，將移動中的鬆餅精準地堆疊在盤子上。</p>
+                <p>操作：點擊滑鼠或按下**空白鍵**讓鬆餅掉落。</p>
+                <button id="start-button">開始遊戲</button>
+            </div>
+        </div>
+
+        <div id="end-screen" class="hidden">
+            <div class="inner">
+                <h2>遊戲結束！</h2>
+                <p>你總共疊了 <span id="final-score">0</span> 個鬆餅。</p>
+                <button id="restart-button">重新開始</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
