@@ -31,6 +31,8 @@ const endScreen = document.getElementById('end-screen');
 const startButton = document.getElementById('start-button');
 const restartButton = document.getElementById('restart-button');
 const finalScoreDisplay = document.getElementById('final-score');
+const endTitle = document.getElementById('end-title');
+const endMessage = document.getElementById('end-message');
 const plateElement = document.getElementById('plate');
 
 
@@ -235,6 +237,13 @@ function handlePancakeDrop(droppedX, droppedWidth, stackHeight) {
         // 以 stack 的資料來計算目前的鬆餅數（不包含盤子）
         scoreDisplay.textContent = `鬆餅數: ${getPancakeCount()}`;
 
+        // 檢查是否達成通關條件（10 片鬆餅）
+        if (getPancakeCount() >= 10) {
+            // 顯示通關畫面
+            winGame();
+            return; // 不再產生下一片
+        }
+
         currentPancakeWidth = newWidth; 
         speed = Math.min(speed + 0.1, 5); 
         
@@ -279,7 +288,29 @@ function gameOver() {
         movingPancakeContainer.removeChild(currentPancake);
     }
 
+    // 顯示結束畫面（失敗或時間到）
+    if (endTitle) endTitle.textContent = '遊戲結束！';
+    if (endMessage) endMessage.innerHTML = `你總共疊了 ${getPancakeCount()} 個鬆餅。`;
     finalScoreDisplay.textContent = getPancakeCount();
+    endScreen.classList.remove('hidden');
+}
+
+/** 玩家通關 */
+function winGame() {
+    isGameRunning = false;
+    clearInterval(intervalId);
+    cancelAnimationFrame(animationFrameId);
+
+    // 移除目前移動中的鬆餅（若存在）
+    if (currentPancake && currentPancake.parentElement === movingPancakeContainer) {
+        movingPancakeContainer.removeChild(currentPancake);
+        currentPancake = null;
+    }
+
+    // 顯示客製化通關訊息
+    if (endTitle) endTitle.textContent = '恭喜通關!';
+    if (endMessage) endMessage.innerHTML = '下面<br>第8個神祕數字是5!';
+
     endScreen.classList.remove('hidden');
 }
 
