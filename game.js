@@ -309,7 +309,7 @@ function winGame() {
 
     // 顯示客製化通關訊息
     if (endTitle) endTitle.textContent = '恭喜通關!';
-    if (endMessage) endMessage.innerHTML = '下面<br>第8個神祕數字是5!';
+    if (endMessage) endMessage.innerHTML = '<br>第8個神祕數字是5!';
 
     endScreen.classList.remove('hidden');
 }
